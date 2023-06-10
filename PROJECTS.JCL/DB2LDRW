@@ -1,0 +1,29 @@
+//DB2LDRW  JOB 'IBMMFS','MAC',CLASS=A,MSGCLASS=X,NOTIFY=&SYSUID
+//*                                                            
+//* PASO DE BORRADO DEL FICHERO DE SALIDA                      
+//*                                                            
+//STEP005  EXEC PGM=IDCAMS                                     
+//SYSPRINT  DD SYSOUT=*                                        
+//SYSIN     DD *                                               
+ DEL PROJECTS.FICHEROS.BANCO01.SALIDA                          
+ SET MAXCC = 0                                                 
+//*                                                            
+//* PASO DE EJECUCION DEL PROGRAMA                             
+//*                                                            
+//STEP010 EXEC PGM=IKJEFT01,DYNAMNBR=20                        
+//STEPLIB DD DSN=DSN610.SDSNLOAD,DISP=SHR                      
+//        DD DSN=DSN610.SDSNEXIT,DISP=SHR                      
+//        DD DSN=DSN610.RUNLIB.LOAD,DISP=SHR                   
+//DBRMLIB DD DSN=PROJECTS.DB2.DBRMLIB,DISP=SHR                    
+//SYSTSPRT DD SYSOUT=A                                         
+//SYSPRINT DD SYSOUT=A                                         
+//SYSUDUMP DD SYSOUT=A                                         
+//ENTRADA  DD DSN=PROJECTS.FICHEROS.BANCO01.ENTRADA,DISP=OLD   
+//SALIDA   DD DSN=PROJECTS.FICHEROS.BANCO01.SALIDA,            
+//            DISP=(NEW,CATLG,DELETE),                         
+//            SPACE=(TRK,(15,15),RLSE)                         
+//SYSTSIN DD *                                                 
+    DSN SYSTEM(DSN1)                                           
+        RUN PROGRAM(PRUEBA12) PLAN(PRUEBA12) -                 
+        LIB('USR001.PRUEBAS.LOAD')                             
+    END                                                        

@@ -1,0 +1,113 @@
+//DB2COMP JOB 'IBMMFS','MAC',CLASS=A,MSGCLASS=X,NOTIFY=&SYSUID    
+//*                                                                
+//**************************************************************   
+//* COBMDSN5 - DB2 PRECOMPILE (PC), *                              
+//* IBM COBOL COMPILE (COB), *                                     
+//* PRELINK (PLKED), *                                             
+//* AND LINK EDIT (LKED) A DB2 SQL PROGRAM. *                      
+//**************************************************************   
+//COBMDSN5 PROC WSPC=500,MEM=BANCO01                               
+//**************************************************************   
+//* PRECOMPILE THE IBM COBOL PROGRAM *                             
+//**************************************************************   
+//PC EXEC PGM=DSNHPC,PARM='HOST(IBMCOB)',REGION=4096K              
+//*DBRMLIB  DD DSN=DSN610.DBRMLIB.DATA(&MEM),          <== DBRM LIB
+//DBRMLIB  DD DSN=PROJECTS.DB2.DBRMLIB(&MEM),          <== DBRM LIB   
+//            DISP=SHR                                             
+//STEPLIB  DD DISP=SHR,DSN=DSN610.SDSNEXIT                         
+//         DD DISP=SHR,DSN=DSN610.SDSNLOAD                         
+//SYSIN    DD DSN=PROJECTS.COBOL(BANCO01),     <= IP PGM           
+//            DISP=SHR                                             
+//SYSCIN   DD DSN=&&DSNHOUT,DISP=(MOD,PASS),UNIT=SYSDA,            
+//            SPACE=(800,(&WSPC,&WSPC))                            
+//SYSLIB   DD DSN=PROJECTS.DB2.DCLGEN,         <== DB2 DCL LIB     
+//            DISP=SHR                                             
+//SYSPRINT DD SYSOUT=*                                             
+//SYSTERM  DD SYSOUT=*                                             
+//SYSUDUMP DD SYSOUT=*                                             
+//SYSUT1   DD SPACE=(800,(&WSPC,&WSPC),,,ROUND),UNIT=SYSDA         
+//SYSUT2   DD SPACE=(800,(&WSPC,&WSPC),,,ROUND),UNIT=SYSDA         
+//**************************************************************   
+//* COMPILE THE IBM COBOL PROGRAM IF THE PRECOMPILE *              
+//* RETURN CODE IS 4 OR LESS. *                                    
+//**************************************************************   
+//COB EXEC PGM=IGYCRCTL,REGION=2048K,                              
+// COND=(4,LT,PC)                                                  
+//STEPLIB  DD DSN=IGY210.SIGYCOMP,DISP=SHR                         
+//SYSPRINT DD SYSOUT=*                                           
+//SYSTERM  DD SYSOUT=*                                           
+//SYSLIN   DD DSN=&&LOADSET,DISP=(MOD,PASS),UNIT=SYSDA,          
+//            SPACE=(800,(&WSPC,&WSPC))                          
+//SYSIN    DD DSN=&&DSNHOUT,DISP=(OLD,DELETE)                    
+//SYSUT1   DD SPACE=(800,(&WSPC,&WSPC),,,ROUND),UNIT=SYSDA       
+//SYSUT2   DD SPACE=(800,(&WSPC,&WSPC),,,ROUND),UNIT=SYSDA       
+//SYSUT3   DD SPACE=(800,(&WSPC,&WSPC),,,ROUND),UNIT=SYSDA       
+//SYSUT4   DD SPACE=(800,(&WSPC,&WSPC),,,ROUND),UNIT=SYSDA       
+//SYSUT5   DD SPACE=(800,(&WSPC,&WSPC),,,ROUND),UNIT=SYSDA       
+//SYSUT6   DD SPACE=(800,(&WSPC,&WSPC),,,ROUND),UNIT=SYSDA       
+//SYSUT7   DD SPACE=(800,(&WSPC,&WSPC),,,ROUND),UNIT=SYSDA       
+//************************************************************** 
+//* PRELINK STEP. *                                              
+//************************************************************** 
+//PLKED EXEC PGM=EDCPRLK,REGION=2048K,COND=((4,LT,PC),(4,LT,COB))
+//STEPLIB  DD DSN=CEE.SCEERUN,DISP=SHR                           
+//SYSMSGS  DD DSN=CEE.SCEEMSGP(EDCPMSGE),DISP=SHR                
+//SYSIN    DD DSN=&&LOADSET,DISP=(OLD,DELETE)                    
+//SYSLIB   DD DSN=CEE.SCEECPP,DISP=SHR                           
+//         DD DSN=CBC.SCLBCPP,DISP=SHR                           
+//SYSMOD   DD DSN=&&PLKSET,UNIT=SYSDA,DISP=(MOD,PASS),           
+//            SPACE=(32000,(30,30)),                             
+//            DCB=(RECFM=FB,LRECL=80,BLKSIZE=3200)               
+//SYSDEFSD DD DUMMY                                              
+//SYSOUT   DD SYSOUT=*                                           
+//SYSPRINT DD SYSOUT=*                                           
+//SYSTERM  DD SYSOUT=*                                           
+//************************************************************** 
+//* LINKEDIT IF THE PRECOMPILE AND COMPILE *                     
+//* RETURN CODES ARE 4 OR LESS. *                                
+//************************************************************** 
+//LKED EXEC PGM=IEWL,PARM='MAP',                                 
+//          COND=((4,LT,PC),(4,LT,COB),(4,LT,PLKED))             
+//SYSLIB DD DSN=CEE.SCEELKED,DISP=SHR                            
+//       DD DISP=SHR,DSN=DSN610.SDSNLOAD                         
+//       DD DISP=SHR,DSN=DSN610.SDSNLOAD                        
+//       DD DISP=SHR,DSN=CICSTS13.CICS.SDFHLOAD                 
+//       DD DISP=SHR,DSN=ISP.SISPLOAD                           
+//SYSLIN DD DSN=&&PLKSET,DISP=(OLD,DELETE)                      
+//       DD DDNAME=SYSIN                                        
+//**************************************************************
+//*                                                             
+//* SYSMOD <== LOADLIB WITH MEM NAME                            
+//* MEM <== MEM NAME                                            
+//*                                                             
+//*                                                             
+//* DBRMLIB <== DBRMLIB NAME                                    
+//*                                                             
+//*                                                             
+//**************************************************************
+//SYSLMOD DD DSN=PROJECTS.LOAD(&MEM), <== LOAD LIB              
+//           DISP=SHR                                           
+//SYSPRINT DD SYSOUT=*                                          
+//SYSUT1 DD SPACE=(1024,(50,50)),UNIT=SYSDA                     
+// PEND                                                         
+// EXEC COBMDSN5,MEM=BANCO01 <== MEM NAME                       
+//* WITH MEM                                                    
+//DB2TSO EXEC PGM=IKJEFT01,DYNAMNBR=20                          
+//STEPLIB  DD DSN=DSN610.SDSNLOAD,DISP=SHR                      
+//         DD DSN=DSN610.SDSNEXIT,DISP=SHR                      
+//         DD DSN=DSN610.RUNLIB.LOAD,DISP=SHR                   
+//*        DD DSN=IBMMFS.CICS410.LOADLIB,DISP=SHR               
+//DBRMLIB  DD DSN=PROJECTS.DB2.DBRMLIB,DISP=SHR                    
+//SYSTSPRT DD SYSOUT=A                                          
+//SYSPRINT DD SYSOUT=A                                          
+//SYSUDUMP DD SYSOUT=A                                          
+//SYSTSIN  DD *                                                 
+    DSN SYSTEM(DSN1)                                            
+       BIND PLAN(BANCO01) MEM(BANCO01) -                        
+                LIBRARY ('USR001.PRUEBAS.DBRM') -               
+                RELEASE(COMMIT) ISOLATION(CS) -                 
+                VALIDATE(BIND) -                                
+                ACTION(REPLACE) OWNER(IBMUSER)
+    END                                       
+/*                                            
+//                                            
